@@ -30,8 +30,8 @@ A small Valentine's Day landing page with a photo CAPTCHA: **4 out of 6** images
    - **Branch**: `main` (or `master`) · **Folder**: `/ (root)`.
    - Click **Save**.
 
-3. **Wait a minute or two.** The site will be at:
+3. **Wait a minute or two.** Your site will be at:
    ```
-   https://<your-username>.github.io/valentine/
+   https://amitzbb.github.io/valentine/
    ```
-   Replace `<your-username>` with your GitHub username. Share that link with Moran.
+   You can also find it on GitHub: repo **Settings → Pages** — after the first deploy, a green banner appears at the top with a **“Visit site”** link. Share that URL with Moran.
