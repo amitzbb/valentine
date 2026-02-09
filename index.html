@@ -300,31 +300,39 @@
 
     .captcha-item .expand-btn {
       position: absolute;
-      bottom: 8px;
+      top: 8px;
       left: 8px;
-      width: 32px;
-      height: 32px;
-      background: rgba(255,255,255,0.9);
-      border: none;
+      width: 26px;
+      height: 26px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(255,255,255,0.6);
       border-radius: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
+      font-size: 0.85rem;
+      line-height: 1;
       opacity: 0;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.2s ease, transform 0.2s ease;
       touch-action: manipulation;
       z-index: 2;
+      backdrop-filter: blur(6px);
     }
 
     .captcha-item:hover .expand-btn,
     .captcha-item .expand-btn:focus {
       opacity: 1;
+      transform: scale(1.02);
+    }
+
+    .captcha-item.selected .expand-btn {
+      opacity: 0.95;
     }
 
     @media (hover: none) {
-      .captcha-item .expand-btn { opacity: 0.85; }
+      .captcha-item .expand-btn { opacity: 0.25; }
+      .captcha-item:active .expand-btn { opacity: 0.95; }
     }
 
     .captcha-item.loading::after {
@@ -703,7 +711,7 @@
         div.dataset.correct = item.correct;
         div.innerHTML = `
           <img src="${item.src}" alt="Photo ${index + 1}" onerror="this.src='https://placehold.co/200x200/f5e6e3/c45c6a?text=Photo+${index + 1}'" />
-          <button type="button" class="expand-btn" aria-label="View full size">🔍</button>
+          <button type="button" class="expand-btn" aria-label="View full size">⤢</button>
           <span class="check">✓</span>
         `;
         const img = div.querySelector('img');
