@@ -210,8 +210,33 @@
     .subtitle {
       font-weight: 300;
       font-size: 1.1rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
       opacity: 0.9;
+    }
+
+    .dog-rollercoaster {
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto 1.5rem;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 12px 32px var(--shadow);
+      animation: dogFloat 4s ease-in-out infinite;
+    }
+
+    .dog-rollercoaster img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    @keyframes dogFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .dog-in-message {
+      margin-bottom: 1.5rem;
     }
 
     .captcha-card {
@@ -298,42 +323,7 @@
       opacity: 1;
     }
 
-    .captcha-item .expand-btn {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      width: 26px;
-      height: 26px;
-      background: rgba(255,255,255,0.55);
-      border: 1px solid rgba(255,255,255,0.6);
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      line-height: 1;
-      opacity: 0;
-      transition: opacity 0.2s ease, transform 0.2s ease;
-      touch-action: manipulation;
-      z-index: 2;
-      backdrop-filter: blur(6px);
-    }
-
-    .captcha-item:hover .expand-btn,
-    .captcha-item .expand-btn:focus {
-      opacity: 1;
-      transform: scale(1.02);
-    }
-
-    .captcha-item.selected .expand-btn {
-      opacity: 0.95;
-    }
-
-    @media (hover: none) {
-      .captcha-item .expand-btn { opacity: 0.25; }
-      .captcha-item:active .expand-btn { opacity: 0.95; }
-    }
+    /* No zoom icon — double tap / double click opens full-size */
 
     .captcha-item.loading::after {
       content: '';
@@ -605,6 +595,9 @@
     <div class="message-view" id="messageView">
       <h2>You did it 💕</h2>
       <div class="heart-divider">♥ ♥ ♥</div>
+      <div class="dog-rollercoaster dog-in-message" aria-hidden="true">
+        <img src="images/Cocker Spaniel's emotional rollercoaster.png" alt="Our dog — Cocker Spaniel emotional rollercoaster" />
+      </div>
       <p>Moran, happy Valentine's Day. I love you so much and truly appreciate and cherish you. I'm endlessly grateful to have you in my life.</p>
       <p>Thank you for always listening, for understanding me, and for the beautiful time we share. Thank you for embracing every part of me — the good, the messy, and everything in between.</p>
       <p>I love you deeply and wish us nothing but happiness and good things on our journey ahead 💕</p>
@@ -711,15 +704,59 @@
         div.dataset.correct = item.correct;
         div.innerHTML = `
           <img src="${item.src}" alt="Photo ${index + 1}" onerror="this.src='https://placehold.co/200x200/f5e6e3/c45c6a?text=Photo+${index + 1}'" />
-          <button type="button" class="expand-btn" aria-label="View full size">⤢</button>
           <span class="check">✓</span>
         `;
         const img = div.querySelector('img');
-        const expandBtn = div.querySelector('.expand-btn');
         img.addEventListener('load', () => div.classList.remove('loading'));
         img.addEventListener('error', () => div.classList.remove('loading'));
-        expandBtn.addEventListener('click', (e) => { e.stopPropagation(); openLightbox(item.src); });
-        div.addEventListener('click', () => toggle(index));
+
+        // Mobile: double-tap opens full size (single tap selects).
+        // We delay the single-tap toggle slightly so we can detect a second tap.
+        let lastTapAt = 0;
+        let singleTapTimer = null;
+        let lastPointerType = 'mouse';
+
+        div.addEventListener('pointerdown', (e) => {
+          lastPointerType = e.pointerType || 'mouse';
+        }, { passive: true });
+
+        const handleTap = (e) => {
+          // Only apply the delay logic for touch/pen; mouse stays instant.
+          const isTouchLike = e.pointerType === 'touch' || e.pointerType === 'pen';
+          if (!isTouchLike) return;
+
+          const now = Date.now();
+          const doubleTap = (now - lastTapAt) < 260;
+          lastTapAt = now;
+
+          if (doubleTap) {
+            if (singleTapTimer) clearTimeout(singleTapTimer);
+            singleTapTimer = null;
+            e.preventDefault?.();
+            openLightbox(item.src);
+            return;
+          }
+
+          if (singleTapTimer) clearTimeout(singleTapTimer);
+          singleTapTimer = setTimeout(() => {
+            toggle(index);
+            singleTapTimer = null;
+          }, 260);
+        };
+
+        div.addEventListener('pointerup', handleTap, { passive: false });
+
+        // Desktop: double-click opens full size; single click selects instantly.
+        div.addEventListener('dblclick', (e) => {
+          e.preventDefault();
+          openLightbox(item.src);
+        });
+        div.addEventListener('click', () => {
+          // For touch/pen, selection is handled by the pointerup delay above.
+          if (lastPointerType === 'touch' || lastPointerType === 'pen') return;
+          toggle(index);
+        });
+
         grid.appendChild(div);
       });
     }
